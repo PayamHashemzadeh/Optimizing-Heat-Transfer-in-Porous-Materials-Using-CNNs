@@ -20,7 +20,7 @@ output_dir = "project_data"
 thermal_diffusivity = 0.1  # Diffusion coefficient for heat transfer simulation
 L = 10.0  # Domain size for simulation
 nx, ny = 50, 50  # Grid resolution
-epochs = 20  # Number of training epochs
+epochs = 200  # Number of training epochs
 learning_rate = 0.001  # Learning rate for optimizer
 
 # Ensure output directory exists
@@ -65,13 +65,17 @@ class CNNModel(nn.Module):
         super(CNNModel, self).__init__()
         self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-        self.fc1 = nn.Linear(32 * 25 * 25, 100)
+        
+        # Calculate the output size after two Conv2d layers for a 50x50 input.
+        # With kernel_size=3 and padding=1, 50x50 input remains 50x50 after each layer.
+        # Downsample by 2 using pooling or reduce based on expected flattened size.
+        self.fc1 = nn.Linear(32 * 50 * 50, 100)  # Updated to match correct output size
         self.fc2 = nn.Linear(100, 1)
 
     def forward(self, x):
         x = torch.relu(self.conv1(x))
         x = torch.relu(self.conv2(x))
-        x = x.view(-1, 32 * 25 * 25)
+        x = x.view(-1, 32 * 50 * 50)  # Updated based on new flattened size
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
         return x
@@ -108,3 +112,5 @@ for epoch in range(epochs):
 model_path = os.path.join(output_dir, "optimized_cnn_model.pth")
 torch.save(model.state_dict(), model_path)
 print(f"Model training completed. Model saved as '{model_path}'.")
+print ("The End")
+
